@@ -21,14 +21,20 @@
 /* NOTE: Do not use this macro before including Windows.h */
 #    define AWSSRW_TO_WINDOWS(pCV) (PSRWLOCK) pCV
 #else
-#    include <pthread.h>
+#    include <aws/common/atomics.h>
+#    include <aws/common/mutex.h>
+#    include <aws/common/semaphore.h>
 #endif
 
 struct aws_rw_lock {
 #ifdef _WIN32
     void *lock_handle;
 #else
-    pthread_rwlock_t lock_handle;
+    struct aws_atomic_var readers;
+    struct aws_atomic_var holdouts;
+    struct aws_semaphore reader_sem;
+    struct aws_semaphore writer_sem;
+    struct aws_mutex writer_lock;
 #endif
 };
 
@@ -37,7 +43,11 @@ struct aws_rw_lock {
         { .lock_handle = NULL }
 #else
 #    define AWS_RW_LOCK_INIT                                                                                           \
-        { .lock_handle = PTHREAD_RWLOCK_INITIALIZER }
+        {                                                                                                              \
+            .readers = AWS_ATOMIC_INIT_INT(0), .holdouts = AWS_ATOMIC_INIT_INT(0),                                     \
+            .reader_sem = AWS_SEMAPHORE_INIT(0, INT), .writer_sem = AWS_SEMAPHORE_INIT(0, 1),                          \
+            .writer_lock = AWS_MUTEX_INIT,                                                                             \
+        }
 #endif
 
 AWS_EXTERN_C_BEGIN
