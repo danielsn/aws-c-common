@@ -78,7 +78,10 @@ int aws_array_list_copy(const struct aws_array_list *AWS_RESTRICT from, struct a
 }
 
 int aws_array_list_ensure_capacity(struct aws_array_list *AWS_RESTRICT list, size_t index) {
-    size_t necessary_size = (index + 1) * list->item_size;
+    size_t necessary_size;
+    if(!aws_mul_size_checked((index + 1), list->item_size, &necessary_size)) {
+        return AWS_OP_ERR;
+    }
 
     if (list->current_size < necessary_size) {
         if (!list->alloc) {

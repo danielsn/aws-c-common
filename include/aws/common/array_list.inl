@@ -220,7 +220,10 @@ int aws_array_list_get_at_ptr(const struct aws_array_list *AWS_RESTRICT list, vo
 
 AWS_STATIC_IMPL
 int aws_array_list_set_at(struct aws_array_list *AWS_RESTRICT list, const void *val, size_t index) {
-    size_t necessary_size = (index + 1) * list->item_size;
+    size_t necessary_size;
+    if(!aws_mul_size_checked((index + 1), list->item_size, &necessary_size)) {
+        return AWS_OP_ERR;
+    }
 
     if (list->current_size < necessary_size) {
         if (aws_array_list_ensure_capacity(list, index)) {
@@ -228,7 +231,12 @@ int aws_array_list_set_at(struct aws_array_list *AWS_RESTRICT list, const void *
         }
     }
 
-    memcpy((void *)((uint8_t *)list->data + (list->item_size * index)), val, list->item_size);
+    size_t shift;
+    if(!aws_mul_size_checked(list->item_size, index, &shift)) {
+        return AWS_OP_ERR;
+    }
+
+    memcpy((void *)((uint8_t *)list->data + shift), val, list->item_size);
 
     /* this isn't perfect but its the best I can come up with for detecting
      * length changes*/
