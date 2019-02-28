@@ -1,0 +1,115 @@
+/*
+ * Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"). You may not use
+ * this file except in compliance with the License. A copy of the License is
+ * located at
+ *
+ *     http://aws.amazon.com/apache2.0/
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+#include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
+#include <aws/common/common.h>
+#include "cbmcproof/cbmc_nondet.h"
+#include "cbmcproof/make_common_datastructures.h"
+#include "cbmcproof/proof_allocators.h"
+#include <stdlib.h>
+
+void make_arbitrary_byte_buf(struct aws_allocator *allocator, struct aws_byte_buf *buf, size_t capacity, size_t len) {
+  buf->buffer = malloc(capacity);//use malloc because we will need to deallocate later
+    buf->len = len;
+    buf->capacity = capacity;
+    buf->allocator = allocator;
+}
+
+void make_arbitrary_byte_buf_full(struct aws_allocator *allocator, struct aws_byte_buf *buf, size_t capacity) {
+  make_arbitrary_byte_buf(allocator, buf, capacity, capacity);
+}
+
+void make_arbitrary_byte_buf_nondet_len_max(struct aws_allocator *allocator, struct aws_byte_buf *buf, size_t max)
+{
+  size_t capacity = nondet_size_t();
+  __CPROVER_assume(capacity <= max);
+  size_t len = nondet_size_t();
+  __CPROVER_assume(len <= capacity);
+  make_arbitrary_byte_buf(allocator, buf, capacity, len);
+}
+
+struct aws_byte_buf * allocate_arbitrary_byte_buf_nondet_len_max(struct aws_allocator *allocator, size_t max)
+{
+  struct aws_byte_buf *buf = malloc(sizeof(*buf));
+  make_arbitrary_byte_buf_nondet_len_max(allocator, buf, max);
+  return buf;
+}
+
+void make_arbitrary_byte_buf_nondet_len(struct aws_allocator *allocator, struct aws_byte_buf *buf)
+{
+  size_t capacity = nondet_size_t();
+  size_t len = nondet_size_t();
+  __CPROVER_assume(len <= capacity);
+  make_arbitrary_byte_buf(allocator, buf, capacity, len);
+}
+
+
+
+/*
+struct aws_array_list {
+    struct aws_allocator *alloc;
+    size_t current_size;
+    size_t length;
+    size_t item_size;
+    void *data;
+};
+*/
+
+//based off of https://github.com/awslabs/aws-c-common/blob/master/include/aws/common/array_list.inl
+//aws_array_list_init_dynamic
+void make_arbitrary_list(struct aws_array_list *AWS_RESTRICT list,
+			struct aws_allocator *alloc,
+			size_t initial_item_allocation,
+			size_t item_size) {
+  list->alloc = alloc;
+  size_t allocation_size = initial_item_allocation * item_size;
+  list->current_size = allocation_size;
+  //  list->length = nondet_size_t();
+  list->length = initial_item_allocation;//DSN HACK FOR NOW UNTIL we can use nondet with the constant propegator
+  __CPROVER_assume(list->length >=0 && list->length <= initial_item_allocation);
+  list->item_size = item_size;
+  //since we want an allocation that can never fail, use straight malloc here
+  list->data = malloc(allocation_size);//allocation_size > 0 ? malloc(allocation_size) : NULL;
+}
+
+struct aws_string* make_arbitrary_aws_string(struct aws_allocator *allocator, size_t len) {
+  struct aws_string *str =malloc(sizeof(struct aws_string) + len + 1);
+  if (!str) {
+    return NULL;
+  }
+
+  /* Fields are declared const, so we need to copy them in like this */
+  *(struct aws_allocator **)(&str->allocator) = allocator;
+  *(size_t *)(&str->len) = len;
+  *(uint8_t *)&str->bytes[len] = '\0';
+  
+  return str;
+}
+
+struct aws_string* make_arbitrary_aws_string_nondet_len(struct aws_allocator *allocator)
+{
+  return make_arbitrary_aws_string_nondet_len_with_max(allocator, INT_MAX - 1 - sizeof(struct aws_string));
+}
+
+struct aws_string* make_arbitrary_aws_string_nondet_len_with_max(struct aws_allocator *allocator, size_t max)
+{
+  size_t len;
+  __CPROVER_assume(len < max);
+  return make_arbitrary_aws_string(allocator, len);
+}
+

@@ -1,4 +1,6 @@
 #include <aws/common/string.h>
+#include "cbmcproof/make_common_datastructures.h"
+#include "cbmcproof/proof_allocators.h"
 #include <stddef.h>
 
 const size_t MAX_STRING_LEN = 64;
@@ -55,9 +57,15 @@ void aws_string_new_from_c_str_harness() {
   c_str[max_strlen] = '\0';//Ensure that the string is no longer than max_strlen.
   //Note that strlen may be shorter than max_strlen if the string has another null character in it
   struct aws_string* aws_str = aws_string_new_from_c_str(can_fail_allocator(), c_str);
-  assert(aws_str->len == strlen(c_str));
-  assert(aws_str->bytes[aws_str->len] == '\0');
-  assert_bytes_match(aws_str->bytes, c_str, aws_str->len);
+  if(aws_str) {
+    size_t aws_string_size = sizeof(struct aws_string);
+    size_t dsn_len2 = aws_str->len;
+    assert(aws_str->len == strlen(c_str));
+    aws_str->bytes[0];
+
+    assert(aws_str->bytes[aws_str->len] == '\0');
+    assert_bytes_match(aws_str->bytes, c_str, aws_str->len);
+  }
 }
 
 void aws_string_new_from_array_harness()
