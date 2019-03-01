@@ -30,17 +30,20 @@ void assert_all_zeroes(const uint8_t* a, size_t len)
 
 void aws_string_bytes_harness()
 {
-  size_t len;
-  struct aws_string* str = make_arbitrary_aws_string(can_fail_allocator(), len);
-  aws_string_bytes(str);
+  struct aws_string* str = make_arbitrary_aws_string_nondet_len(can_fail_allocator());
+  assert(aws_string_bytes(str) == str->bytes);
 }
 
 void aws_string_eq_harness()
 {
   struct aws_string* str_a = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   struct aws_string* str_b = nondet_bool()
-    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);;
-  aws_string_eq(str_a, str_b);
+    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
+  int rval = aws_string_eq(str_a, str_b);
+  if(rval) {
+    assert(str_a->len > 0);
+    assert_bytes_match(str_a->bytes, str_b->bytes, str_a->len);
+  }
 }
 
 //byte cursor
@@ -76,14 +79,15 @@ void aws_string_new_from_array_harness()
   size_t reported_size;
   __CPROVER_assume(reported_size <= alloc_len);
   struct aws_string* aws_str = aws_string_new_from_array(can_fail_allocator(), array, reported_size);
-  assert(aws_str->len == reported_size);
-  assert(aws_str->bytes[aws_str->len] == '\0');
-  assert_bytes_match(aws_str->bytes, array, aws_str->len);  
+  if(aws_str) {
+    assert(aws_str->len == reported_size);
+    assert(aws_str->bytes[aws_str->len] == '\0');
+    assert_bytes_match(aws_str->bytes, array, aws_str->len);
+  }
 }
 
 void aws_string_new_from_string_harness()
 {
-
   struct aws_string* str_a = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   struct aws_string* str_b = aws_string_new_from_string(str_a->allocator, str_a);
   assert(str_a->len == str_b->len);
@@ -98,29 +102,35 @@ void aws_string_destroy_harness(){
 }
 
 void aws_string_destroy_secure_harness(){
-  struct aws_string* str =  make_arbitrary_aws_string_nondet_len(can_fail_allocator());
+  struct aws_string* str =  make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
+  assert(str);
+  char* bytes = str->bytes;
+  size_t len = str->len;
+  __CPROVER_allocated_memory(bytes, len);//tell CBMC to keep the buffer live after the free
   aws_string_destroy_secure(str);
-  //TODO see if there is a way to check that the memory really was zeroed
+  assert_all_zeroes(bytes, len);
 }
-
-
 
 void aws_string_compare_harness()
 {
   struct aws_string* str_a = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   struct aws_string* str_b = nondet_bool()
-    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);;
+    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   int rval = aws_string_compare(str_a, str_b);
-  //TODO is there a clean CBMC check to do here?
+  if(!rval){
+    assert_bytes_match(str_a->bytes, str_b->bytes, str_a->len);
+  }
 }
 
 void aws_array_list_comparator_string_harness()
 {
   struct aws_string* str_a = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   struct aws_string* str_b = nondet_bool()
-    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);;
+    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   int rval = aws_array_list_comparator_string(str_a, str_b);
-  //TODO is there a clean CBMC check to do here?
+  if(!rval){
+    assert_bytes_match(str_a->bytes, str_b->bytes, str_a->len);
+  }  
 }
 
 void aws_byte_buf_write_from_whole_string_harness() {

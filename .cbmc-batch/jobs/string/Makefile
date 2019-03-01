@@ -13,7 +13,7 @@
 
 ###########
 #NOTE: If we don't use the unwindset, leave it empty
-#CBMC_UNWINDSET = --unwindset
+CBMC_UNWINDSET = --unwindset memcmp.0:65,strlen.0:65,memcpy_impl.0:65,memset_impl.0:65
 
 CBMCFLAGS +=
 
@@ -23,11 +23,14 @@ DEPENDENCIES = $(SRCDIR)/source/array_list.c \
 	       $(SRCDIR)/source/error.c \
 	       $(SRCDIR)/source/string.c \
 	       $(HELPERDIR)/source/memcpy_override.c \
+	       $(HELPERDIR)/source/memcmp_override.c \
 	       $(HELPERDIR)/source/proof_allocators.c \
 	       $(HELPERDIR)/source/make_common_datastructures.c 
 
 ENTRY = string_tests
-FUNCTION = aws_string_new_from_c_str_harness
+FUNCTION = aws_string_destroy_secure_harness
+#FUNCTION = aws_string_new_from_c_str_harness
+#Function = aws_string_eq_harness
 ###########
 
 include ../Makefile.common

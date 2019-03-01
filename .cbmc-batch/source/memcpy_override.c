@@ -16,7 +16,7 @@
 #include <stddef.h>
 #include "cbmcproof/cbmc_nondet.h"
 #define NONDET_THIS_MANY_BYTES 8
-#define UNROLL_THIS_MANY_BYTES 32
+#define UNROLL_THIS_MANY_BYTES 128
 /** 
  * Abstract memcpy to check that pointers are valid, and then return dst
  * Doesn't actually copy the bytes - if the underlying array was already nondet, that is fine
@@ -76,5 +76,33 @@ void *__builtin___memcpy_chk(void *dst, const void *src, __CPROVER_size_t n, __C
 {
   (void) size;
   return memcpy_impl(dst,src,n);
+}
 
+void *memset_impl(void *s, int c, size_t n)
+{
+  __CPROVER_precondition(__CPROVER_w_ok(s, n),
+                         "memset destination region writeable");
+
+  if(n > 0)
+  {
+    char *sp=s;
+    for(__CPROVER_size_t i=0; i<n ; i++) sp[i]=c;
+  }
+  return s;
+}
+
+void *__builtin___memset_chk(void *s, int c, __CPROVER_size_t n, __CPROVER_size_t size)
+{
+  (void) size;
+  return memset_impl(s, c, n);
+}
+
+void *memset(void *s, int c, size_t n)
+{
+  return memset_impl(s, c, n);
+}
+
+void *__builtin_memset(void *s, int c, __CPROVER_size_t n)
+{
+  return memset_impl(s, c, n);
 }

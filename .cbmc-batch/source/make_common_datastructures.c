@@ -88,6 +88,7 @@ void make_arbitrary_list(struct aws_array_list *AWS_RESTRICT list,
 }
 
 struct aws_string* make_arbitrary_aws_string(struct aws_allocator *allocator, size_t len) {
+  __CPROVER_assume(len > 0);
   struct aws_string *str =malloc(sizeof(struct aws_string) + len + 1);
   if (!str) {
     return NULL;
