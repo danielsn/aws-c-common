@@ -17,8 +17,9 @@
 
 CBMCFLAGS +=
 
-DEPENDENCIES =  $(HELPERDIR)/source/make_common_data_structures.c \
-		   $(HELPERDIR)/stubs/error.c \
+DEPENDENCIES = $(HELPERDIR)/source/make_common_data_structures.c \
+	       $(HELPERDIR)/source/proof_allocators.c \
+	       $(HELPERDIR)/stubs/error.c \
 	       $(SRCDIR)/source/array_list.c \
 	       $(SRCDIR)/source/common.c
 
