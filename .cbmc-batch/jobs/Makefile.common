@@ -24,11 +24,14 @@ ABSTRACTIONS ?= ""
 BASEDIR ?= $(abspath ../../../..)
 BATCH ?= cbmc-batch
 
+FUNCTION ?= ENTRY
+
 CBMCFLAGS += \
 	--bounds-check \
 	--pointer-check \
+	--unwind 1 \
 	--unwinding-assertions \
-	--function $(ENTRY) \
+	--function $(FUNCTION) \
 	$(CBMC_UNWINDSET)
 
 GOTO_ANALYZER ?= goto-analyzer

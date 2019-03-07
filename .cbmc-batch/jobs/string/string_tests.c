@@ -3,7 +3,7 @@
 #include "cbmcproof/proof_allocators.h"
 #include <stddef.h>
 
-const size_t MAX_STRING_LEN = 64;
+const size_t MAX_STRING_LEN = 16;
 
 void assert_bytes_match(const uint8_t* a, const uint8_t* b, size_t len)
 {
@@ -66,7 +66,7 @@ void aws_string_new_from_c_str_harness() {
     assert(aws_str->len == strlen(c_str));
     aws_str->bytes[0];
 
-    assert(aws_str->bytes[aws_str->len] == '\0');
+    assert(aws_str->bytes[aws_str->len+1] == 0);
     assert_bytes_match(aws_str->bytes, c_str, aws_str->len);
   }
 }
@@ -81,7 +81,12 @@ void aws_string_new_from_array_harness()
   struct aws_string* aws_str = aws_string_new_from_array(can_fail_allocator(), array, reported_size);
   if(aws_str) {
     assert(aws_str->len == reported_size);
-    assert(aws_str->bytes[aws_str->len] == '\0');
+    char* dsn_ptr = &aws_str->bytes[aws_str->len];
+    char dsn_val = aws_str->bytes[aws_str->len];
+    size_t actual_offset = sizeof(*aws_str) + aws_str->len;
+    char* dsn_ptr2 = &((char*)aws_str)[actual_offset];
+    char dsn_val2 = *dsn_ptr2;
+    assert(aws_str->bytes[aws_str->len] == 0);
     assert_bytes_match(aws_str->bytes, array, aws_str->len);
   }
 }

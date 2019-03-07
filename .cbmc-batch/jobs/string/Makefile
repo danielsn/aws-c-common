@@ -13,7 +13,7 @@
 
 ###########
 #NOTE: If we don't use the unwindset, leave it empty
-CBMC_UNWINDSET = --unwindset memcmp.0:65,strlen.0:65,memcpy_impl.0:65,memset_impl.0:65
+CBMC_UNWINDSET = --unwindset memcmp.0:17,strlen.0:17,memcpy_impl.0:17,memset_impl.0:17
 
 CBMCFLAGS +=
 
@@ -28,9 +28,8 @@ DEPENDENCIES = $(SRCDIR)/source/array_list.c \
 	       $(HELPERDIR)/source/make_common_datastructures.c 
 
 ENTRY = string_tests
-FUNCTION = aws_string_destroy_secure_harness
-#FUNCTION = aws_string_new_from_c_str_harness
-#Function = aws_string_eq_harness
+NAME = new_from_array
+FUNCTION = "aws_string_$(NAME)_harness"
 ###########
 
 include ../Makefile.common
