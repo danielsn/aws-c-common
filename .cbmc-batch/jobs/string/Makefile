@@ -28,8 +28,10 @@ DEPENDENCIES = $(SRCDIR)/source/array_list.c \
 	       $(HELPERDIR)/source/make_common_datastructures.c 
 
 ENTRY = string_tests
-NAME = new_from_array
+NAME = compare
 FUNCTION = "aws_string_$(NAME)_harness"
+#FUNCTION = aws_byte_cursor_from_string_harness
+#FUNCTION = aws_string_compare_harness
 ###########
 
 include ../Makefile.common

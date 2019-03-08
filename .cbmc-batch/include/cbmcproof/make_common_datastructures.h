@@ -20,6 +20,12 @@
 #include <aws/common/common.h>
 #include <aws/common/string.h>
 
+
+/**
+ * Makes a byte_buf, with as much nondet as possible, len < max, valid backing storage
+ */
+struct aws_byte_cursor make_arbitrary_byte_cursor_nondet_len_max(size_t max);
+
 /**
  * Makes a byte_buf, with as much nondet as possible, defined len and capacity
  */

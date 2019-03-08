@@ -23,6 +23,21 @@
 #include "cbmcproof/proof_allocators.h"
 #include <stdlib.h>
 
+/*
+struct aws_byte_cursor {
+    size_t len;
+    uint8_t *ptr;
+};
+*/
+
+struct aws_byte_cursor make_arbitrary_byte_cursor_nondet_len_max(size_t max)
+{
+  size_t len;
+  __CPROVER_assume(len <= max);
+  struct aws_byte_cursor rval = {.len = len, .ptr = malloc(len)};
+  return rval;
+}
+
 void make_arbitrary_byte_buf(struct aws_allocator *allocator, struct aws_byte_buf *buf, size_t capacity, size_t len) {
   buf->buffer = malloc(capacity);//use malloc because we will need to deallocate later
     buf->len = len;
@@ -88,11 +103,8 @@ void make_arbitrary_list(struct aws_array_list *AWS_RESTRICT list,
 }
 
 struct aws_string* make_arbitrary_aws_string(struct aws_allocator *allocator, size_t len) {
-  __CPROVER_assume(len > 0);
+  //  __CPROVER_assume(len > 0);
   struct aws_string *str =malloc(sizeof(struct aws_string) + len + 1);
-  if (!str) {
-    return NULL;
-  }
 
   /* Fields are declared const, so we need to copy them in like this */
   *(struct aws_allocator **)(&str->allocator) = allocator;

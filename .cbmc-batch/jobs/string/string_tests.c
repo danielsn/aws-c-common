@@ -39,15 +39,35 @@ void aws_string_eq_harness()
   struct aws_string* str_a = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   struct aws_string* str_b = nondet_bool()
     ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
-  int rval = aws_string_eq(str_a, str_b);
+  bool rval = aws_string_eq(str_a, str_b);
   if(rval) {
-    assert(str_a->len > 0);
+    assert(str_a->len == str_b->len);
     assert_bytes_match(str_a->bytes, str_b->bytes, str_a->len);
   }
 }
 
-//byte cursor
-//byte buffer
+void aws_string_eq_byte_cursor_harness()
+{
+  struct aws_string* str = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
+  struct aws_byte_cursor cursor = nondet_bool() ? aws_byte_cursor_from_string(str)
+    : make_arbitrary_byte_cursor_nondet_len_max(MAX_STRING_LEN);
+  bool rval = aws_string_eq_byte_cursor(str, &cursor);
+  if(rval) {
+    assert(str->len == cursor.len);
+    assert_bytes_match(str->bytes, cursor.ptr, str->len);
+  }
+}
+
+void aws_string_eq_byte_buffer_harness()
+{
+  struct aws_string* str = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
+  struct aws_byte_buf* buf = allocate_arbitrary_byte_buf_nondet_len_max(can_fail_allocator(), MAX_STRING_LEN);
+  bool rval = aws_string_eq_byte_buf(str, buf);
+  if(rval) {
+    assert(str->len == buf->len);
+    assert_bytes_match(str->bytes, buf->buffer, str->len);
+  }
+}
 
 void aws_string_new_from_c_str_harness() {
   size_t alloc_len;
@@ -66,7 +86,7 @@ void aws_string_new_from_c_str_harness() {
     assert(aws_str->len == strlen(c_str));
     aws_str->bytes[0];
 
-    assert(aws_str->bytes[aws_str->len+1] == 0);
+    assert(aws_str->bytes[aws_str->len] == 0);
     assert_bytes_match(aws_str->bytes, c_str, aws_str->len);
   }
 }
@@ -83,21 +103,27 @@ void aws_string_new_from_array_harness()
     assert(aws_str->len == reported_size);
     char* dsn_ptr = &aws_str->bytes[aws_str->len];
     char dsn_val = aws_str->bytes[aws_str->len];
+    char dsn_val_from_ptr = *dsn_ptr;
+    assert(dsn_val == dsn_val_from_ptr);
     size_t actual_offset = sizeof(*aws_str) + aws_str->len;
     char* dsn_ptr2 = &((char*)aws_str)[actual_offset];
     char dsn_val2 = *dsn_ptr2;
+    assert(dsn_ptr == dsn_ptr2);
     assert(aws_str->bytes[aws_str->len] == 0);
     assert_bytes_match(aws_str->bytes, array, aws_str->len);
   }
 }
 
+//
 void aws_string_new_from_string_harness()
 {
   struct aws_string* str_a = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   struct aws_string* str_b = aws_string_new_from_string(str_a->allocator, str_a);
-  assert(str_a->len == str_b->len);
-  assert(str_b->bytes[str_b->len] == '\0');
-  assert_bytes_match(str_a->bytes, str_b->bytes, str_a->len);
+  if(str_b) {
+    assert(str_a->len == str_b->len);
+    assert(str_b->bytes[str_b->len] == '\0');
+    assert_bytes_match(str_a->bytes, str_b->bytes, str_a->len);
+  }
 }
 
 
@@ -131,7 +157,7 @@ void aws_array_list_comparator_string_harness()
 {
   struct aws_string* str_a = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
   struct aws_string* str_b = nondet_bool()
-    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
+    ? str_a : make_arbitrary_aws_string_nondet_len_with_max(Can_fail_allocator(), MAX_STRING_LEN);
   int rval = aws_array_list_comparator_string(str_a, str_b);
   if(!rval){
     assert_bytes_match(str_a->bytes, str_b->bytes, str_a->len);
@@ -139,9 +165,34 @@ void aws_array_list_comparator_string_harness()
 }
 
 void aws_byte_buf_write_from_whole_string_harness() {
+  struct aws_byte_buf *buf = allocate_arbitrary_byte_buf_nondet_len_max(can_fail_allocator(), MAX_STRING_LEN);
+  struct aws_byte_buf old_buf = *buf;
+  //nondeterministially pick a btye. We can then track if it has changed
+  size_t index_to_check = Nondet_size_t();
+  __CPROVER_assume(index_to_check < buf->len);
+  uint8_t byte_old = buf->buffer[index_to_check];
+  size_t availabie_cap = buf->capacity - buf->len;
+  struct aws_string *str = make_arbitrary_aws_string_nondet_len_with_max(Can_fail_allocator(), MAX_STRING_LEN);
+
+  
+  bool rval = aws_byte_buf_write_from_whole_string(buf,str);
+  //The value is appended to the end of the byte buf.  Make sure that worked.
+  if(rval){
+    assert(availabie_cap >= str->len);
+    assert(buf->len == str->len + old_buf.len);
+    assert_bytes_match(str->bytes, buf->buffer + old_buf.len, str->len);
+  } else {
+    assert(availabie_cap < str->len);
+  }
+  //In either case, the existing bytes in the buffer were unchanged.
+  assert(buf->buffer[index_to_check] == byte_old);
 
 }
 
 void aws_byte_cursor_from_string_harness() {
-
+  struct aws_string* str = make_arbitrary_aws_string_nondet_len_with_max(can_fail_allocator(), MAX_STRING_LEN);
+  struct aws_byte_cursor cursor = aws_byte_cursor_from_string(str);
+  assert(cursor.len == str->len);
+  assert(cursor.ptr == str->bytes);
+  assert_bytes_match(str->bytes, cursor.ptr, str->len);
 }
