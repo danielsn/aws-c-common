@@ -1,4 +1,4 @@
 jobos: ubuntu16
-cbmcflags: "--bounds-check;--pointer-check;--function;aws_array_list_init_static_harness"
-goto: aws_array_list_init_static_harness.goto
+cbmcflags:        "--bounds-check;--pointer-check;--unwind;1;--unwinding-assertions;--function;aws_string_compare_harness;--unwindset;memcmp.0:17,strlen.0:17,memcpy_impl.0:17,memset_impl.0:17"
+goto: string_tests.goto
 expected: "SUCCESSFUL"

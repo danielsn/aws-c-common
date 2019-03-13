@@ -193,7 +193,16 @@ $(ENTRY).yaml: $(ENTRY).goto Makefile
 	echo 'coverage_memory: $(COVMEM)' >> $@
 	echo 'expected: "SUCCESSFUL"' >> $@
 
-batch-yaml: $(ENTRY).yaml
+full-batch-yaml: $(ENTRY).yaml
+
+cbmc-batch.yaml: $(ENTRY).goto Makefile
+	echo 'jobos: ubuntu16' > $@
+	echo 'cbmcflags: $(call yaml_encode_options,$(CBMCFLAGS))' >> $@
+	echo 'goto: $(ENTRY).goto' >> $@
+	echo 'expected: "SUCCESSFUL"' >> $@
+
+short-batch-yaml: cbmc-batch.yaml
+
 
 launch: $(ENTRY).goto Makefile
 	mkdir -p $(WS)
