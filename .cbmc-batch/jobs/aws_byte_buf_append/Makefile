@@ -22,8 +22,9 @@ CBMCFLAGS +=
 DEPENDENCIES = $(SRCDIR)/source/array_list.c \
 	       $(SRCDIR)/source/byte_buf.c \
 	       $(SRCDIR)/source/common.c \
-	       $(SRCDIR)/source/error.c \
-	       $(HELPERDIR)/patches/string.c
+	       $(HELPERDIR)/source/make_common_data_structures.c \
+	       $(HELPERDIR)/source/error.c \
+	       $(HELPERDIR)/stubs/memcpy_override.c
 
 ENTRY = aws_byte_buf_append_harness
 ###########

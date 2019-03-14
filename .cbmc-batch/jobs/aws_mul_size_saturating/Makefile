@@ -18,7 +18,8 @@
 CBMCFLAGS +=
 
 DEPENDENCIES = $(SRCDIR)/source/common.c \
-	       $(SRCDIR)/source/error.c
+	       $(HELPERDIR)/source/make_common_data_structures.c \
+	       $(HELPERDIR)/source/error.c
 
 ENTRY = aws_mul_size_saturating_harness
 ###########
