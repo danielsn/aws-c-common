@@ -141,7 +141,10 @@ void aws_array_list_pop_front_n(struct aws_array_list *AWS_RESTRICT list, size_t
 AWS_STATIC_IMPL
 int aws_array_list_back(const struct aws_array_list *AWS_RESTRICT list, void *val) {
     if (aws_array_list_length(list) > 0) {
-        size_t last_item_offset = list->item_size * (aws_array_list_length(list) - 1);
+        size_t last_item_offset;
+        if (aws_mul_size_checked(list->item_size, (aws_array_list_length(list) - 1), &last_item_offset)) {
+            return AWS_OP_ERR;
+        }
 
         memcpy(val, (void *)((uint8_t *)list->data + last_item_offset), list->item_size);
         return AWS_OP_SUCCESS;
