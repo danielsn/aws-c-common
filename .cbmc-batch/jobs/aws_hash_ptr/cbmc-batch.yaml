@@ -1,0 +1,4 @@
+jobos: ubuntu16
+goto: aws_hash_table_init_harness.goto
+cbmcflags:        "--bounds-check;--pointer-check;--unsigned-overflow-check;--signed-overflow-check;--unwinding-assertions;--function;aws_hash_table_init_harness"
+expected: "SUCCESSFUL"
