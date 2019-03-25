@@ -14,7 +14,8 @@
 ###########
 #NOTE: If we don't use the unwindset, leave it empty
 UNWINDSET += memcpy_impl.0:105
-UNWINDSET += memset_impl.0:49
+#A hash entry is 24 bytes, and there are 16 of them to start
+UNWINDSET += memset_impl.0:385
 UNWINDSET += s_update_template_size.0:17
 
 CBMCFLAGS +=
@@ -22,6 +23,7 @@ CBMCFLAGS +=
 DEPENDENCIES += $(HELPERDIR)/stubs/memcmp_override.c
 DEPENDENCIES += $(HELPERDIR)/stubs/memcpy_override.c
 DEPENDENCIES += $(HELPERDIR)/stubs/memset_override.c
+DEPENDENCIES += $(HELPERDIR)/source/proof_allocators.c
 DEPENDENCIES += $(SRCDIR)/source/common.c
 DEPENDENCIES += $(SRCDIR)/source/error.c
 DEPENDENCIES += $(SRCDIR)/source/hash_table.c
