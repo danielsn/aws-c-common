@@ -14,8 +14,7 @@
 ###########
 #NOTE: If we don't use the unwindset, leave it empty
 UNWINDSET += memcpy_impl.0:105
-#A hash entry is 24 bytes, and there are 16 of them to start
-UNWINDSET += memset_impl.0:385
+UNWINDSET += memset_impl.0:385 #A hash entry is 24 bytes, and there are 16 of them to start
 UNWINDSET += s_update_template_size.0:17
 
 CBMCFLAGS +=
