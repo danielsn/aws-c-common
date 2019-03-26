@@ -17,7 +17,7 @@
 #include <proof_helpers/make_common_data_structures.h>
 #include <proof_helpers/proof_allocators.h>
 
-const int MAX_TABLE_SIZE = 16;
+const int MAX_TABLE_SIZE = 4;
 
 void aws_hash_table_init_harness() {
     struct aws_allocator *allocator;
