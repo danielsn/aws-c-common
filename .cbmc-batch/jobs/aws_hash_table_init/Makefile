@@ -12,16 +12,15 @@
 # limitations under the License.
 
 ###########
-#NOTE: If we don't use the unwindset, leave it empty
-UNWINDSET += memcpy_impl.0:105
-UNWINDSET += memset_impl.0:100 #A hash entry is 24 bytes, and there are 4 of them to start
+UNWINDSET += memcpy_using_uint64_impl.0:14
+UNWINDSET += memset_using_uint64_impl.0:14 #A hash entry is 24 bytes, and there are 4 of them to start
 UNWINDSET += s_update_template_size.0:17
 
 CBMCFLAGS +=
 
 DEPENDENCIES += $(HELPERDIR)/stubs/memcmp_override.c
-DEPENDENCIES += $(HELPERDIR)/stubs/memcpy_override.c
-DEPENDENCIES += $(HELPERDIR)/stubs/memset_override.c
+DEPENDENCIES += $(HELPERDIR)/stubs/memcpy_using_uint64.c
+DEPENDENCIES += $(HELPERDIR)/stubs/memset_using_uint64.c
 DEPENDENCIES += $(HELPERDIR)/source/proof_allocators.c
 DEPENDENCIES += $(SRCDIR)/source/common.c
 DEPENDENCIES += $(SRCDIR)/source/error.c

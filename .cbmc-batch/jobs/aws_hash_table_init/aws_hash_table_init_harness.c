@@ -19,6 +19,12 @@
 
 const int MAX_TABLE_SIZE = 4;
 
+/**
+ * Runtime: user	10m12.757s
+ * 0.78 (121 lines out of 156 statically-reachable lines in 17 functions reached)
+ * The low coverage is due to various overflow checking that statically cannot
+ * happen in this harness.
+ */
 void aws_hash_table_init_harness() {
     struct aws_allocator *allocator;
     ASSUME_CAN_FAIL_ALLOCATOR(allocator);
