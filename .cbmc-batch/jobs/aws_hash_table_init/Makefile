@@ -12,8 +12,13 @@
 # limitations under the License.
 
 ###########
-UNWINDSET += memcpy_using_uint64_impl.0:14
-UNWINDSET += memset_using_uint64_impl.0:14 #A hash entry is 24 bytes, and there are 4 of them to start
+MAX_TABLE_SIZE ?= 2
+DEFINES += -DMAX_TABLE_SIZE=$(MAX_TABLE_SIZE) 
+
+#UNWINDSET += memcpy_using_uint64_impl.0:14
+#UNWINDSET += memset_using_uint64_impl.0:14 #A hash entry is 24 bytes, and there are 4 of them to start
+UNWINDSET += memcpy_using_uint64_impl.0:9
+UNWINDSET += memset_using_uint64_impl.0:9 #A hash entry is 24 bytes, and there are 4 of them to start
 UNWINDSET += s_update_template_size.0:17
 
 CBMCFLAGS +=
