@@ -109,6 +109,10 @@ bool is_valid_hash_table(struct aws_hash_table* map);
 
 /**
  * Given a pointer to a hash_table_state, checks that it is well-formed, with all data-structure invariants
- * true
  */
 bool is_valid_hash_table_state(struct hash_table_state *map);
+
+/**
+ * Given a pointer to an aws_hash_table, allocates the memory necessary for the implementation
+ */
+void ensure_allocated_hash_table(struct aws_hash_table* map, size_t max_table_entries);

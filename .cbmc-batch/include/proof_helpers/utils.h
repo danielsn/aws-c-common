@@ -19,6 +19,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+struct store_byte_from_buffer {
+    size_t index;
+    uint8_t byte;
+};
+
 void assert_bytes_match(const uint8_t *a, const uint8_t *b, size_t len);
 void assert_all_bytes_are(const uint8_t *a, const uint8_t c, size_t len);
 void assert_all_zeroes(const uint8_t *a, size_t len);

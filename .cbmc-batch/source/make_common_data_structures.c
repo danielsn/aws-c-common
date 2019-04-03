@@ -116,6 +116,20 @@ struct aws_string *make_arbitrary_aws_string_nondet_len_with_max(struct aws_allo
     return make_arbitrary_aws_string(allocator, len);
 }
 
+void ensure_allocated_hash_table(struct aws_hash_table* map, size_t max_table_entries)
+{
+  size_t num_entries;
+  __CPROVER_assume(num_entries < max_table_entries);
+  __CPROVER_assume(isPowerOfTwo(num_entries));
+  
+  size_t required_bytes = sizeof(struct hash_table_state) //the structure + one entry
+    +  ((num_entries -1) * sizeof(struct hash_table_entry));
+  struct hash_table_state *impl = malloc(required_bytes);
+  impl->size = num_entries;
+  
+  map->p_impl = impl;
+}
+
 bool is_valid_hash_table_state(struct hash_table_state *map) {
   bool hash_fn = map->hash_fn != NULL;
   bool equals_fn = map->equals_fn != NULL;
@@ -131,4 +145,8 @@ bool is_valid_hash_table_state(struct hash_table_state *map) {
 
 bool is_valid_hash_table(struct aws_hash_table* map) {
   return is_valid_hash_table_state(map->p_impl);
+}
+
+bool hash_table_use_standard_functions() {
+  return true;
 }
