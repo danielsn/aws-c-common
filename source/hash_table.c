@@ -258,6 +258,7 @@ void aws_hash_table_swap(struct aws_hash_table *AWS_RESTRICT a, struct aws_hash_
 }
 
 void aws_hash_table_move(struct aws_hash_table *AWS_RESTRICT to, struct aws_hash_table *AWS_RESTRICT from) {
+    assert(to != from);
     *to = *from;
     memset(from, 0, sizeof(*from));
 }
