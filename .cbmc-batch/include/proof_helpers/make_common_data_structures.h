@@ -116,3 +116,5 @@ bool is_valid_hash_table_state(struct hash_table_state *map);
  * Given a pointer to an aws_hash_table, allocates the memory necessary for the implementation
  */
 void ensure_allocated_hash_table(struct aws_hash_table* map, size_t max_table_entries);
+
+size_t hash_table_state_required_size_in_bytes(size_t num_entries);

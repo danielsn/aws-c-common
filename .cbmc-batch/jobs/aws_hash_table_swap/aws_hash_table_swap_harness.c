@@ -20,7 +20,7 @@
 #include <proof_helpers/utils.h>
 
 /**
- *
+ * Runtime: 4.5s
  */
 void aws_hash_table_swap_harness() {
     struct aws_hash_table map_a;
@@ -30,6 +30,24 @@ void aws_hash_table_swap_harness() {
     ensure_allocated_hash_table(&map_b, MAX_TABLE_SIZE);
     __CPROVER_assume(is_valid_hash_table(&map_a));
     __CPROVER_assume(is_valid_hash_table(&map_b));
-		     
-    aws_hash_table_swap(&map_a, nondet_bool() ? &map_a : &map_b);
+
+    //Check what happens if the to and from alias.
+    struct aws_hash_table* pa = &map_a;
+    struct aws_hash_table* pb = nondet_bool() ? &map_a : &map_b;
+
+    struct store_byte_from_buffer byte_a;
+    struct store_byte_from_buffer byte_b;
+
+    save_byte_from_hash_table(pa, &byte_a);
+    save_byte_from_hash_table(pb, &byte_b);
+    
+    aws_hash_table_swap(pa, pb);
+
+    //Ensure that they are still both valid hash_tables.
+    assert(is_valid_hash_table(pa));
+    assert(is_valid_hash_table(pb));
+    
+    //Ensure that the two tables were byte for byte swapped
+    check_byte_from_hash_table(pa, &byte_b);
+    check_byte_from_hash_table(pb, &byte_a);
 }

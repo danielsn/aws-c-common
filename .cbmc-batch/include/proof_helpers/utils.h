@@ -28,3 +28,6 @@ void assert_bytes_match(const uint8_t *a, const uint8_t *b, size_t len);
 void assert_all_bytes_are(const uint8_t *a, const uint8_t c, size_t len);
 void assert_all_zeroes(const uint8_t *a, size_t len);
 bool isPowerOfTwo(size_t x);
+void save_byte_from_array(uint8_t* array, size_t size, struct store_byte_from_buffer *storage);
+void save_byte_from_hash_table(struct aws_hash_table* map, struct store_byte_from_buffer* storage);
+void check_byte_from_hash_table(struct aws_hash_table* map, struct store_byte_from_buffer* storage);

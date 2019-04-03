@@ -122,11 +122,9 @@ void ensure_allocated_hash_table(struct aws_hash_table* map, size_t max_table_en
   __CPROVER_assume(num_entries < max_table_entries);
   __CPROVER_assume(isPowerOfTwo(num_entries));
   
-  size_t required_bytes = sizeof(struct hash_table_state) //the structure + one entry
-    +  ((num_entries -1) * sizeof(struct hash_table_entry));
+  size_t required_bytes = hash_table_state_required_size_in_bytes(num_entries);
   struct hash_table_state *impl = malloc(required_bytes);
   impl->size = num_entries;
-  
   map->p_impl = impl;
 }
 
@@ -149,4 +147,10 @@ bool is_valid_hash_table(struct aws_hash_table* map) {
 
 bool hash_table_use_standard_functions() {
   return true;
+}
+
+size_t hash_table_state_required_size_in_bytes(size_t num_entries)
+{
+  return sizeof(struct hash_table_state) //the structure + one entry
+    +  ((num_entries -1) * sizeof(struct hash_table_entry));
 }
