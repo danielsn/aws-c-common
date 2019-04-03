@@ -15,9 +15,11 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 void assert_bytes_match(const uint8_t *a, const uint8_t *b, size_t len);
 void assert_all_bytes_are(const uint8_t *a, const uint8_t c, size_t len);
 void assert_all_zeroes(const uint8_t *a, size_t len);
+bool isPowerOfTwo(size_t x);

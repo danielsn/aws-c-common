@@ -1,4 +1,4 @@
 jobos: ubuntu16
+cbmcflags: "--bounds-check;--div-by-zero-check;--float-overflow-check;--nan-check;--pointer-check;--pointer-overflow-check;--signed-overflow-check;--undefined-shift-check;--unsigned-overflow-check;--unwind;1;--unwinding-assertions;--unwindset;memset_override_0_impl.0:25,s_update_template_size.0:9"
 goto: aws_hash_table_init_harness.goto
-cbmcflags:        "--bounds-check;--pointer-check;--unsigned-overflow-check;--signed-overflow-check;--unwinding-assertions;--function;aws_hash_table_init_harness"
 expected: "SUCCESSFUL"

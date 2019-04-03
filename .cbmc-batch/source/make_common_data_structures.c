@@ -13,13 +13,7 @@
  * limitations under the License.
  */
 
-#include <aws/common/common.h>
-#include <limits.h>
 #include <proof_helpers/make_common_data_structures.h>
-#include <proof_helpers/nondet.h>
-#include <proof_helpers/proof_allocators.h>
-#include <stdint.h>
-#include <stdlib.h>
 
 struct aws_array_list *make_arbitrary_array_list(size_t initial_item_allocation, size_t item_size) {
     struct aws_array_list *list;
@@ -120,4 +114,21 @@ struct aws_string *make_arbitrary_aws_string_nondet_len_with_max(struct aws_allo
     size_t len;
     __CPROVER_assume(len < max);
     return make_arbitrary_aws_string(allocator, len);
+}
+
+bool is_valid_hash_table_state(struct hash_table_state *map) {
+  bool hash_fn = map->hash_fn != NULL;
+  bool equals_fn = map->equals_fn != NULL;
+  bool alloc =  map->alloc != NULL;
+  bool power_of_two = isPowerOfTwo(map->size);
+  bool mask = map->mask == (map->size - 1);
+  bool entry_count = map->entry_count <= map->size;
+  bool max_load =  map->max_load < map->size;
+  bool max_load_factor = map->max_load_factor == 0.95;//hard to assert given floating point accuracy
+
+  return alloc && power_of_two && mask && entry_count && max_load; //&& max_load_factor;
+}
+
+bool is_valid_hash_table(struct aws_hash_table* map) {
+  return is_valid_hash_table_state(map->p_impl);
 }

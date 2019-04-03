@@ -12,23 +12,26 @@
 # limitations under the License.
 
 ###########
-MAX_TABLE_SIZE ?= 2
+#size 2 takes 1m 3s
+#size 4 takes 3m 5s
+#size 8 takes 14 m user, 24m real
+MAX_TABLE_SIZE ?= 4
 DEFINES += -DMAX_TABLE_SIZE=$(MAX_TABLE_SIZE) 
 
-#UNWINDSET += memcpy_using_uint64_impl.0:14
-#UNWINDSET += memset_using_uint64_impl.0:14 #A hash entry is 24 bytes, and there are 4 of them to start
-UNWINDSET += memcpy_using_uint64_impl.0:9
-UNWINDSET += memset_using_uint64_impl.0:9 #A hash entry is 24 bytes, and there are 4 of them to start
-UNWINDSET += s_update_template_size.0:17
+#A hash entry is 24 bytes, which is 3 iters. So we need 3 * MAX_TABLE_SIZE + 1
+UNROLL_SIZE := $(shell echo $$(($$((3 * $(MAX_TABLE_SIZE))) + 1)))
+
+UNWINDSET += memset_override_0_impl.0:$(UNROLL_SIZE)
+UNWINDSET += s_update_template_size.0:9
 
 CBMCFLAGS +=
 
-DEPENDENCIES += $(HELPERDIR)/stubs/memcmp_override.c
-DEPENDENCIES += $(HELPERDIR)/stubs/memcpy_using_uint64.c
-DEPENDENCIES += $(HELPERDIR)/stubs/memset_using_uint64.c
+DEPENDENCIES += $(HELPERDIR)/source/make_common_data_structures.c
 DEPENDENCIES += $(HELPERDIR)/source/proof_allocators.c
+DEPENDENCIES += $(HELPERDIR)/source/utils.c
+DEPENDENCIES += $(HELPERDIR)/stubs/error.c
+DEPENDENCIES += $(HELPERDIR)/stubs/memset_override_0.c
 DEPENDENCIES += $(SRCDIR)/source/common.c
-DEPENDENCIES += $(SRCDIR)/source/error.c
 DEPENDENCIES += $(SRCDIR)/source/hash_table.c
 
 ENTRY = aws_hash_table_init_harness
