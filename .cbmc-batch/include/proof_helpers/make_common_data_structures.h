@@ -117,4 +117,11 @@ bool is_valid_hash_table_state(struct hash_table_state *map);
  */
 void ensure_allocated_hash_table(struct aws_hash_table* map, size_t max_table_entries);
 
+
+
 size_t hash_table_state_required_size_in_bytes(size_t num_entries);
+
+/**
+ * Given a pointer to a hash_iter, checks that it is well-formed, with all data-structure invariants
+ */
+bool aws_hash_iter_is_valid(struct aws_hash_iter *iter);

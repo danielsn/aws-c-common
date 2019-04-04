@@ -154,3 +154,18 @@ size_t hash_table_state_required_size_in_bytes(size_t num_entries)
   return sizeof(struct hash_table_state) //the structure + one entry
     +  ((num_entries -1) * sizeof(struct hash_table_entry));
 }
+
+/**
+ * Given a pointer to a hash_iter, checks that it is well-formed, with all data-structure invariants.
+ * There is some interresting stuff where iter->slot can underflow to SIZE_MAX after a delete,
+ * see the comments for aws_hash_iter_delete()
+ */
+bool aws_hash_iter_is_valid(struct aws_hash_iter *iter)
+{
+  return
+    iter &&
+    iter->map &&
+    is_valid_hash_table(iter->map) && 
+    (iter->slot <= iter->limit || iter->slot == SIZE_MAX) &&
+    iter->limit == ((struct hash_table_state*) iter->map->p_impl)->size;
+}
