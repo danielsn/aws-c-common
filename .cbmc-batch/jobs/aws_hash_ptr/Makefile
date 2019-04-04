@@ -19,10 +19,7 @@ CBMCFLAGS +=
 
 DEPENDENCIES = $(SRCDIR)/source/hash_table.c \
 	       $(SRCDIR)/source/common.c \
-	       $(SRCDIR)/source/error.c \
-	       $(HELPERDIR)/source/memset_override.c \
-	       $(HELPERDIR)/source/memcmp_override.c \
-	       $(HELPERDIR)/source/memcpy_override.c 
+	       $(SRCDIR)/source/error.c 
 
 ENTRY = aws_hash_ptr_harness
 ###########

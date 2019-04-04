@@ -15,8 +15,6 @@
 
 #include <aws/common/hash_table.h>
 
-const int MAX_TABLE_SIZE = 16;
-
 void aws_hash_ptr_harness() {
     void *item;
     uint64_t rval = aws_hash_ptr(item);
