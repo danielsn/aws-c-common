@@ -100,6 +100,15 @@ AWS_COMMON_API int aws_add_u32_checked(uint32_t a, uint32_t b, uint32_t *r);
 #    pragma warning(disable : 4127) /*Disable "conditional expression is constant" */
 #endif                              /* _MSC_VER */
 
+  /**
+   * Function to check if x is power of 2 
+   */
+AWS_STATIC_IMPL bool isPowerOfTwo(size_t x) {
+    /* First x in the below expression is for the case when x is 0 */
+    return x && (!(x & (x - 1)));
+}
+
+  
 /**
  * Multiplies a * b. If the result overflows, returns SIZE_MAX.
  */

@@ -128,44 +128,6 @@ void ensure_allocated_hash_table(struct aws_hash_table* map, size_t max_table_en
   map->p_impl = impl;
 }
 
-bool is_valid_hash_table_state(struct hash_table_state *map) {
-  bool hash_fn = map->hash_fn != NULL;
-  bool equals_fn = map->equals_fn != NULL;
-  bool alloc =  map->alloc != NULL;
-  bool power_of_two = isPowerOfTwo(map->size);
-  bool mask = map->mask == (map->size - 1);
-  bool entry_count = map->entry_count <= map->size;
-  bool max_load =  map->max_load < map->size;
-  bool max_load_factor = map->max_load_factor == 0.95;//hard to assert given floating point accuracy
-
-  return alloc && power_of_two && mask && entry_count && max_load; //&& max_load_factor;
-}
-
-bool is_valid_hash_table(struct aws_hash_table* map) {
-  return is_valid_hash_table_state(map->p_impl);
-}
-
 bool hash_table_use_standard_functions() {
   return true;
-}
-
-size_t hash_table_state_required_size_in_bytes(size_t num_entries)
-{
-  return sizeof(struct hash_table_state) //the structure + one entry
-    +  ((num_entries -1) * sizeof(struct hash_table_entry));
-}
-
-/**
- * Given a pointer to a hash_iter, checks that it is well-formed, with all data-structure invariants.
- * There is some interresting stuff where iter->slot can underflow to SIZE_MAX after a delete,
- * see the comments for aws_hash_iter_delete()
- */
-bool aws_hash_iter_is_valid(struct aws_hash_iter *iter)
-{
-  return
-    iter &&
-    iter->map &&
-    is_valid_hash_table(iter->map) && 
-    (iter->slot <= iter->limit || iter->slot == SIZE_MAX) &&
-    iter->limit == ((struct hash_table_state*) iter->map->p_impl)->size;
 }

@@ -38,11 +38,6 @@ void assert_all_zeroes(const uint8_t *a, size_t len) {
     assert_all_bytes_are(a, 0, len);
 }
 
-/* Function to check if x is power of 2 */
-bool isPowerOfTwo(size_t x) {
-    /* First x in the below expression is for the case when x is 0 */
-    return x && (!(x & (x - 1)));
-}
 
 void save_byte_from_array(uint8_t* array, size_t size, struct store_byte_from_buffer *storage)
 {

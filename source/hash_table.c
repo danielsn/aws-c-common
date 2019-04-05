@@ -159,7 +159,7 @@ static struct hash_table_state *s_alloc_state(const struct hash_table_state *tem
         return state;
     }
 
-    memcpy(state, template, sizeof(*template));
+    *state = *template;
     memset(&state->slots[0], 0, size - sizeof(*state) + sizeof(state->slots[0]));
 
     return state;
@@ -540,7 +540,9 @@ static size_t s_remove_entry(struct hash_table_state *state, struct hash_table_e
      * don't terminate at the removed element.
      */
     size_t index = s_index_for(state, entry);
+    size_t loop_iterations = 0;
     while (1) {
+	assert(++loop_iterations <= state->size);
         size_t next_index = (index + 1) & state->mask;
 
         /* If we hit an empty slot, stop */
@@ -557,10 +559,11 @@ static size_t s_remove_entry(struct hash_table_state *state, struct hash_table_e
         }
 
         /* Okay, shift this one back */
-        memcpy(&state->slots[index], &state->slots[next_index], sizeof(*state->slots));
+	state->slots[index] = state->slots[next_index];
         index = next_index;
     }
 
+    assert(index < state->size);
     /* Clear the entry we shifted out of */
     AWS_ZERO_STRUCT(state->slots[index]);
 
@@ -827,4 +830,42 @@ void aws_hash_callback_string_destroy(void *a) {
 
 bool aws_ptr_eq(const void *a, const void *b) {
     return a == b;
+}
+
+/**
+ * Given a pointer to a hash_iter, checks that it is well-formed, with all data-structure invariants.
+ * There is some interresting stuff where iter->slot can underflow to SIZE_MAX after a delete,
+ * see the comments for aws_hash_iter_delete()
+ */
+bool aws_hash_iter_is_valid(struct aws_hash_iter *iter)
+{
+  return
+    iter &&
+    iter->map &&
+    is_valid_hash_table(iter->map) && 
+    (iter->slot <= iter->limit || iter->slot == SIZE_MAX) &&
+    iter->limit == ((struct hash_table_state*) iter->map->p_impl)->size;
+}
+
+size_t s_hash_table_state_required_size_in_bytes(size_t num_entries)
+{
+  return sizeof(struct hash_table_state) //the structure + one entry
+    +  ((num_entries -1) * sizeof(struct hash_table_entry));
+}
+
+bool is_valid_hash_table_state(struct hash_table_state *map) {
+  bool hash_fn = map->hash_fn != NULL;
+  bool equals_fn = map->equals_fn != NULL;
+  bool alloc =  map->alloc != NULL;
+  bool power_of_two = isPowerOfTwo(map->size);
+  bool mask = map->mask == (map->size - 1);
+  bool entry_count = map->entry_count <= map->size;
+  bool max_load =  map->max_load < map->size;
+  bool max_load_factor = map->max_load_factor == 0.95;//hard to assert given floating point accuracy
+
+  return alloc && power_of_two && mask && entry_count && max_load; //&& max_load_factor;
+}
+
+bool is_valid_hash_table(struct aws_hash_table* map) {
+  return is_valid_hash_table_state(map->p_impl);
 }

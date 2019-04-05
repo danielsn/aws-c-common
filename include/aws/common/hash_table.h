@@ -396,6 +396,21 @@ void aws_hash_callback_string_destroy(void *a);
 AWS_COMMON_API
 bool aws_ptr_eq(const void *a, const void *b);
 
+
+
+/**
+ * Given a pointer to an aws_hash_iter, checks that it is well-formed, with all data-structure invariants.
+ */
+AWS_COMMON_API
+bool aws_hash_iter_is_valid(struct aws_hash_iter *iter);
+
+/**
+ * Given a pointer to an aws_hash_table, checks that it is well-formed, with all data-structure invariants.
+ */
+AWS_COMMON_API
+bool is_valid_hash_table(struct aws_hash_table* map);
+
+
 AWS_EXTERN_C_END
 
 #endif /* AWS_COMMON_HASH_TABLE_H */

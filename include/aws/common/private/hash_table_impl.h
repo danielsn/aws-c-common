@@ -39,4 +39,11 @@ struct hash_table_state {
     struct hash_table_entry slots[1];
 };
 
+/**
+ * Given a pointer to a hash_table_state, checks that it is well-formed, with all data-structure invariants.
+ */
+
+bool is_valid_hash_table_state(const struct hash_table_state *map);
+
+
 #endif /* AWS_COMMON_PRIVATE_HASH_TABLE_IMPL_H */
