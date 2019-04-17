@@ -214,8 +214,7 @@ int aws_hash_table_init(
         return AWS_OP_ERR;
     }
 
-    AWS_POSTCONDITION(aws_hash_table_is_valid(map));
-    return AWS_OP_SUCCESS;
+    return AWS_RETURN_SUCCESS_WITH_POSTCONDITION(aws_hash_table_is_valid(map));
 }
 
 void aws_hash_table_clean_up(struct aws_hash_table *map) {

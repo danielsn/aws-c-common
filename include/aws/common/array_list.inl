@@ -157,8 +157,7 @@ int aws_array_list_back(const struct aws_array_list *AWS_RESTRICT list, void *va
         size_t last_item_offset = list->item_size * (aws_array_list_length(list) - 1);
 
         memcpy(val, (void *)((uint8_t *)list->data + last_item_offset), list->item_size);
-        AWS_POSTCONDITION(aws_array_list_is_valid(list));
-        return AWS_OP_SUCCESS;
+        return AWS_RETURN_SUCCESS_WITH_POSTCONDITION(aws_array_list_is_valid(list));
     }
 
     return aws_raise_error(AWS_ERROR_LIST_EMPTY);
@@ -217,8 +216,7 @@ size_t aws_array_list_length(const struct aws_array_list *AWS_RESTRICT list) {
      * list.
      */
     AWS_FATAL_ASSERT(!list->length || list->data);
-
-    return list->length;
+    return AWS_RETURN_VALUE_WITH_POSTCONDITION(aws_array_list_is_valid(list), list->length);
 }
 
 AWS_STATIC_IMPL
