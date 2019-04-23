@@ -70,7 +70,7 @@ bool hash_table_state_is_valid(const struct hash_table_state *map) {
     bool alloc_nonnull = (map->alloc != NULL);
     bool size_at_least_two = (map->size >= 2);
     bool size_is_power_of_two = aws_is_power_of_two(map->size);
-    bool entry_count = (map->entry_count < map->max_load);
+    bool entry_count = (map->entry_count <= map->max_load);
     bool max_load = (map->max_load < map->size);
     bool mask_is_correct = (map->mask == (map->size - 1));
     bool max_load_factor_bounded = (map->max_load_factor < 1.0);
@@ -78,6 +78,22 @@ bool hash_table_state_is_valid(const struct hash_table_state *map) {
 
     return hash_fn_nonnull && equals_fn_nonnull && alloc_nonnull && size_at_least_two && size_is_power_of_two &&
            entry_count && max_load && mask_is_correct && max_load_factor_bounded && slots_allocated;
+}
+#include <assert.h>
+AWS_STATIC_IMPL
+void assert_hash_table_state_is_valid(const struct hash_table_state *map) {
+    assert(map);
+    assert(map->hash_fn != NULL);
+    assert(map->equals_fn != NULL);
+    /*destroy_key_fn and destroy_value_fn are both allowed to be NULL*/
+    assert(map->alloc != NULL);
+    assert(map->size >= 2);
+    assert(aws_is_power_of_two(map->size));
+    assert(map->entry_count <= map->max_load);
+    assert(map->max_load < map->size);
+    assert(map->mask == (map->size - 1));
+    assert(map->max_load_factor < 1.0);
+    assert(AWS_MEM_IS_WRITABLE(&map->slots[0], sizeof(map->slots[0]) * map->size));
 }
 
 /**
@@ -88,6 +104,41 @@ bool hash_table_state_is_valid(const struct hash_table_state *map) {
 AWS_STATIC_IMPL
 bool aws_hash_table_is_valid(const struct aws_hash_table *map) {
     return map && map->p_impl && hash_table_state_is_valid(map->p_impl);
+}
+
+/**
+ * Given a pointer to a hash_iter, checks that it is well-formed, with all data-structure invariants.
+ */
+AWS_STATIC_IMPL
+bool aws_hash_iter_is_valid(const struct aws_hash_iter *iter) {
+    if (!iter) {
+        return false;
+    }
+    if (!iter->map) {
+        return false;
+    }
+    if (!aws_hash_table_is_valid(iter->map)) {
+        return false;
+    }
+    if (iter->limit > iter->map->p_impl->size) {
+        return false;
+    }
+
+    switch (iter->status) {
+        case AWS_HASH_ITER_STATUS_DONE:
+            /* Done iff slot == limit */
+            return iter->slot == iter->limit;
+        case AWS_HASH_ITER_STATUS_DELETE_CALLED:
+            /* iter->slot can underflow to SIZE_MAX after a delete
+             * see the comments for aws_hash_iter_delete() */
+            return iter->slot <= iter->limit || iter->slot == SIZE_MAX;
+        case AWS_HASH_ITER_STATUS_READY_FOR_USE:
+            /* A slot must point to a valid location (i.e. hash_code != 0) */
+            return iter->slot < iter->limit && iter->map->p_impl->slots[iter->slot].hash_code != 0;
+        default:
+            /* Invalid status code */
+            return false;
+    }
 }
 
 /**
