@@ -804,6 +804,7 @@ bool aws_hash_callback_string_eq(const void *a, const void *b) {
 }
 
 void aws_hash_callback_string_destroy(void *a) {
+    AWS_PRECONDITION(aws_string_is_valid(a));
     aws_string_destroy(a);
 }
 

@@ -209,4 +209,13 @@ AWS_STATIC_IMPL struct aws_byte_cursor aws_byte_cursor_from_string(const struct 
     return aws_byte_cursor_from_array(aws_string_bytes(src), src->len);
 }
 
+/**
+ * Checks data-structure invarients.
+ */
+AWS_STATIC_IMPL bool aws_string_is_valid(const struct aws_string *str) {
+  //  return str && AWS_MEM_IS_READABLE(&str->bytes[0], str->len + 1) && str->bytes[str->len] == 0;
+  return str && AWS_MEM_IS_READABLE(str->bytes, str->len + 1) && str->bytes[str->len] == 0;
+
+}
+
 #endif /* AWS_COMMON_STRING_H */
