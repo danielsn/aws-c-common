@@ -708,7 +708,10 @@ bool aws_hash_iter_done(const struct aws_hash_iter *iter) {
 
 void aws_hash_iter_next(struct aws_hash_iter *iter) {
     AWS_PRECONDITION(aws_hash_iter_is_valid(iter));
+#pragma CPROVER check push
+#pragma CPROVER check disable "unsigned-overflow"
     s_get_next_element(iter, iter->slot + 1);
+#pragma CPROVER check pop
     AWS_POSTCONDITION(iter->status == AWS_HASH_ITER_STATUS_DONE || iter->status == AWS_HASH_ITER_STATUS_READY_FOR_USE);
     AWS_POSTCONDITION(aws_hash_iter_is_valid(iter));
 }
