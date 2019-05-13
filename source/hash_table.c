@@ -332,7 +332,10 @@ static int s_find_entry1(
      * transitions and the loop will exit (if it hasn't already)
      */
     while (1) {
+#pragma CPROVER check push
+#pragma CPROVER check disable "unsigned-overflow"
         uint64_t index = (hash_code + probe_idx) & state->mask;
+#pragma CPROVER check pop
         entry = &state->slots[index];
         if (!entry->hash_code) {
             rv = AWS_ERROR_HASHTBL_ITEM_NOT_FOUND;
@@ -344,7 +347,10 @@ static int s_find_entry1(
             break;
         }
 
+#pragma CPROVER check push
+#pragma CPROVER check disable "unsigned-overflow"
         uint64_t entry_probe = (index - entry->hash_code) & state->mask;
+#pragma CPROVER check pop
 
         if (entry_probe < probe_idx) {
             /* We now know that our target entry cannot exist; if it did exist,

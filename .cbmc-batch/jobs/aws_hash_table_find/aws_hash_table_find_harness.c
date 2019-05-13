@@ -19,12 +19,6 @@
 #include <proof_helpers/proof_allocators.h>
 #include <proof_helpers/utils.h>
 
-bool aws_hash_proof_eq(const void *a, const void *b) {
-    assert(a);
-    assert(b);
-    return nondet_bool();
-}
-
 uint64_t aws_hash_proof_hasher(const void *a) {
     assert(a);
     return nondet_uint64_t();
@@ -35,8 +29,9 @@ void aws_hash_table_find_harness() {
     struct aws_hash_table map;
     ensure_allocated_hash_table(&map, MAX_TABLE_SIZE);
     __CPROVER_assume(aws_hash_table_is_valid(&map));
-    map.p_impl->equals_fn = aws_hash_proof_eq;
-    map.p_impl->hash_fn = aws_hash_proof_eq;
+    map.p_impl->equals_fn = nondet_compare;
+    map.p_impl->hash_fn = nondet_compare;
+    //map.p_impl->hash_fn = aws_hash_proof_hasher;
 
     size_t empty_slot_idx;
     __CPROVER_assume(aws_hash_table_has_an_empty_slot(&map, &empty_slot_idx));
