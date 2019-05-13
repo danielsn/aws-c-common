@@ -44,12 +44,33 @@ static void s_suppress_unused_lookup3_func_warnings(void) {
 static uint64_t s_hash_for(struct hash_table_state *state, const void *key) {
     s_suppress_unused_lookup3_func_warnings();
 
+    if (key == NULL) {
+        /* The best answer */
+        return 42;
+    }
+
     uint64_t hash_code = state->hash_fn(key);
     if (!hash_code) {
         hash_code = 1;
     }
 
     return hash_code;
+}
+
+/**
+ * Check equality of two hash keys, with a reasonable semantics for null keys.
+ */
+static bool s_hash_keys_eq(struct hash_table_state *state, const void *a, const void *b) {
+    /* Short circuit if the pointers are the same */
+    if (a == b) {
+        return true;
+    }
+    /* If one but not both are null, the objects are not equal */
+    if (a == NULL || b == NULL) {
+        return false;
+    }
+    /* If both are non-null, call the underlying equals fn */
+    return state->equals_fn(a, b);
 }
 
 static size_t s_index_for(struct hash_table_state *map, struct hash_table_entry *entry) {
@@ -282,7 +303,7 @@ static int inline s_find_entry(
         return AWS_ERROR_HASHTBL_ITEM_NOT_FOUND;
     }
 
-    if (entry->hash_code == hash_code && state->equals_fn(key, entry->element.key)) {
+    if (entry->hash_code == hash_code && s_hash_keys_eq(state, key, entry->element.key)) {
         if (p_probe_idx) {
             *p_probe_idx = 0;
         }
@@ -306,7 +327,11 @@ static int s_find_entry1(
 
     int rv;
     struct hash_table_entry *entry;
-    do {
+    /* This loop is guaranteed to terminate because entry_probe is bounded above by state->mask (i.e. state->size - 1).
+     * Since probe_idx increments every loop iteration, it will become larger than entry_probe after at most state->size
+     * transitions and the loop will exit (if it hasn't already)
+     */
+    while (1) {
         uint64_t index = (hash_code + probe_idx) & state->mask;
         entry = &state->slots[index];
         if (!entry->hash_code) {
@@ -314,7 +339,7 @@ static int s_find_entry1(
             break;
         }
 
-        if (entry->hash_code == hash_code && state->equals_fn(key, entry->element.key)) {
+        if (entry->hash_code == hash_code && s_hash_keys_eq(state, key, entry->element.key)) {
             rv = AWS_ERROR_SUCCESS;
             break;
         }
@@ -332,7 +357,7 @@ static int s_find_entry1(
         }
 
         probe_idx++;
-    } while (1);
+    }
 
     *p_entry = entry;
     if (p_probe_idx) {
@@ -343,6 +368,9 @@ static int s_find_entry1(
 }
 
 int aws_hash_table_find(const struct aws_hash_table *map, const void *key, struct aws_hash_element **p_elem) {
+
+    AWS_PRECONDITION(aws_hash_table_is_valid(map));
+    AWS_PRECONDITION(AWS_OBJECT_PTR_IS_WRITABLE(p_elem));
 
     struct hash_table_state *state = map->p_impl;
     uint64_t hash_code = s_hash_for(state, key);
