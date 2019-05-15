@@ -15,10 +15,11 @@
 #4: 25s
 #8: 1m
 #16: 5m45s
-MAX_TABLE_SIZE ?= 4
+MAX_TABLE_SIZE ?= 2
 DEFINES += -DMAX_TABLE_SIZE=$(MAX_TABLE_SIZE) 
 
-UNWINDSET += s_find_entry1.0:$(shell echo $$((1 + $(MAX_TABLE_SIZE))))
+#UNWINDSET += s_find_entry1.0:$(shell echo $$((1 + $(MAX_TABLE_SIZE))))
+UNWINDSET += memset_override_0_impl.0:$(shell echo $$(($$((3 * $$(( $(MAX_TABLE_SIZE) * 2 )) )) + 11)))
 
 CBMCFLAGS +=
 
@@ -26,6 +27,7 @@ DEPENDENCIES += $(HELPERDIR)/source/make_common_data_structures.c
 DEPENDENCIES += $(HELPERDIR)/source/proof_allocators.c
 DEPENDENCIES += $(HELPERDIR)/source/utils.c
 DEPENDENCIES += $(HELPERDIR)/stubs/error.c
+DEPENDENCIES += $(HELPERDIR)/stubs/memset_override_no_op.c
 DEPENDENCIES += $(SRCDIR)/source/common.c
 DEPENDENCIES += $(SRCDIR)/source/hash_table.c
 

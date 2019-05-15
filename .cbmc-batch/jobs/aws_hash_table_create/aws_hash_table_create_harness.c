@@ -25,6 +25,7 @@ void aws_hash_table_create_harness() {
   __CPROVER_assume(aws_hash_table_is_valid(&map));
   map.p_impl->equals_fn = uninterpreted_equals;
   map.p_impl->hash_fn = uninterpreted_hasher;
+  map.p_impl->alloc = can_fail_allocator();
 
   size_t empty_slot_idx;
   __CPROVER_assume(aws_hash_table_has_an_empty_slot(&map, &empty_slot_idx));
