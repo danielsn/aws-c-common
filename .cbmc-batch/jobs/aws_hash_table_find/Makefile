@@ -15,7 +15,7 @@
 #4: 25s
 #8: 1m
 #16: 5m45s
-MAX_TABLE_SIZE ?= 8
+MAX_TABLE_SIZE ?= 4
 DEFINES += -DMAX_TABLE_SIZE=$(MAX_TABLE_SIZE) 
 
 UNWINDSET += s_find_entry1.0:$(shell echo $$((1 + $(MAX_TABLE_SIZE))))
