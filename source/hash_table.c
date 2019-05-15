@@ -415,8 +415,11 @@ static struct hash_table_entry *s_emplace_item(
         size_t index = (size_t)(entry.hash_code + probe_idx) & state->mask;
         struct hash_table_entry *victim = &state->slots[index];
 
+#pragma CPROVER check push
+#pragma CPROVER check disable "unsigned-overflow"
         size_t victim_probe_idx = (size_t)(index - victim->hash_code) & state->mask;
-
+#pragma CPROVER check pop
+	
         if (!victim->hash_code || victim_probe_idx < probe_idx) {
             if (!initial_placement) {
                 initial_placement = victim;
