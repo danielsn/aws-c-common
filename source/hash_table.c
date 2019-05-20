@@ -419,7 +419,7 @@ static struct hash_table_entry *s_emplace_item(
 #pragma CPROVER check disable "unsigned-overflow"
         size_t victim_probe_idx = (size_t)(index - victim->hash_code) & state->mask;
 #pragma CPROVER check pop
-	
+
         if (!victim->hash_code || victim_probe_idx < probe_idx) {
             if (!initial_placement) {
                 initial_placement = victim;
