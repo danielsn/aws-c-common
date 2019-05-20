@@ -104,13 +104,12 @@ else
 		2>&1 | tee $(ENTRY)2.log
 endif
 
-
 $(ENTRY)2.goto: $(ENTRY)1.goto
 ifeq ($(ABSTRACTIONS), "")
 	cp $< $@
 	echo "Not implementing abstractions" | tee $(ENTRY)2.log
 else
-	$(GOTO_INSTRUMENT) $(ABSTRACTIONS) --add-library $< $@ \
+	$(GOTO_CC) --function $(ENTRY) $(ABSTRACTIONS) $< $(INC) $(DEFINES) -o $@ \
 		2>&1 | tee $(ENTRY)2.log
 endif
 
