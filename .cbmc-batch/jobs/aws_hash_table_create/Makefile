@@ -35,6 +35,10 @@ DEPENDENCIES += $(HELPERDIR)/stubs/memset_override_no_op.c
 DEPENDENCIES += $(SRCDIR)/source/common.c
 DEPENDENCIES += $(SRCDIR)/source/hash_table.c
 
+ABSTRACTIONS +=  $(HELPERDIR)/stubs/s_expand_table_override.c
+
+ADDITIONAL_REMOVE_FUNCTION_BODY += --remove-function-body s_expand_table
+
 ENTRY = aws_hash_table_create_harness
 ###########
 
