@@ -14,20 +14,20 @@ int __CPROVER_file_local_hash_table_c_s_expand_table(struct aws_hash_table *map)
     struct hash_table_state *old_state = map->p_impl;
     struct hash_table_state template = *old_state;
 
-    if (s_update_template_size(&template, template.size * 2) != AWS_OP_SUCCESS){
+    if (__CPROVER_file_local_hash_table_c_s_update_template_size(&template, template.size * 2) != AWS_OP_SUCCESS){
       return AWS_OP_ERR;
     }
 
     /* Don't use s_alloc_state because that will call calloc
      * and we want non-det values for the entries
      */
-    size_t required_bytes;
-    if (hash_table_state_required_bytes(template.size, &required_bytes)) {
-        return NULL;
-    }
+    size_t required_bytes = sizeof(struct hash_table_state) + template.size * sizeof(struct hash_table_entry);
+    /* if (hash_table_state_required_bytes(template.size, &required_bytes)) { */
+    /*     return NULL; */
+    /* } */
 
     /* An empty slot has hashcode 0. So this marks all slots as empty */
-    struct hash_table_state *new_state = aws_mem_alloc(template.alloc, required_bytes);
+    struct hash_table_state *new_state = aws_mem_acquire(template.alloc, required_bytes);
 
     if (new_state == NULL) {
         return AWS_OP_ERR;

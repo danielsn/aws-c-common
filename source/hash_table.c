@@ -412,7 +412,10 @@ static struct hash_table_entry *s_emplace_item(
     struct hash_table_entry *initial_placement = NULL;
 
     while (entry.hash_code) {
+#pragma CPROVER check push
+#pragma CPROVER check disable "unsigned-overflow"
         size_t index = (size_t)(entry.hash_code + probe_idx) & state->mask;
+#pragma CPROVER check pop
         struct hash_table_entry *victim = &state->slots[index];
 
 #pragma CPROVER check push
@@ -442,7 +445,12 @@ static int s_expand_table(struct aws_hash_table *map) {
     struct hash_table_state *old_state = map->p_impl;
     struct hash_table_state template = *old_state;
 
-    if (s_update_template_size(&template, template.size * 2)) {
+    size_t new_size;
+    if(aws_mul_size_checked(template.size, 2, &new_size)) {
+        return AWS_OP_ERR;
+    }
+
+    if (s_update_template_size(&template, new_size)) {
         return AWS_OP_ERR;
     }
 
@@ -501,6 +509,7 @@ int aws_hash_table_create(
             /* Any error was already raised in expand_table */
             return rv;
         }
+	//__CPROVER_assert(0,"a");
         state = map->p_impl;
         /* If we expanded the table, we need to discard the probe index returned from find_entry,
          * as it's likely that we can find a more desirable slot. If we don't, then later gets will
@@ -511,7 +520,7 @@ int aws_hash_table_create(
          * forget when we optimize later. */
         probe_idx = 0;
     }
-
+    // __CPROVER_assert(0,"b");
     state->entry_count++;
     struct hash_table_entry new_entry;
     new_entry.element.key = key;
