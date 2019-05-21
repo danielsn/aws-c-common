@@ -18,25 +18,8 @@
 #include <proof_helpers/make_common_data_structures.h>
 #include <proof_helpers/proof_allocators.h>
 #include <proof_helpers/utils.h>
+//Currently takes 4m40s
 
-int s_expand_table(struct aws_hash_table *map) {
-    struct hash_table_state *old_state = map->p_impl;
-    struct hash_table_state template = *old_state;
-
-    s_update_template_size(&template, template.size * 2);
-
-    struct hash_table_state *new_state = s_alloc_state(&template);
-    if (!new_state) {
-        return AWS_OP_ERR;
-    }
-
-    map->p_impl = new_state;
-    aws_mem_release(new_state->alloc, old_state);
-    __CPROVER_assume(aws_hash_table_is_valid(map));
-    size_t empty_slot_idx;
-    __CPROVER_assume(aws_hash_table_has_an_empty_slot(&map, &empty_slot_idx));
-    return AWS_OP_SUCCESS;
-}
 void aws_hash_table_create_harness() {
     struct aws_hash_table map;
     ensure_allocated_hash_table(&map, MAX_TABLE_SIZE);

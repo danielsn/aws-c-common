@@ -37,7 +37,7 @@ DEPENDENCIES += $(SRCDIR)/source/hash_table.c
 
 ABSTRACTIONS +=  $(HELPERDIR)/stubs/s_expand_table_override.c
 
-ADDITIONAL_REMOVE_FUNCTION_BODY += --remove-function-body s_expand_table
+ADDITIONAL_REMOVE_FUNCTION_BODY += --remove-function-body __CPROVER_file_local_hash_table_c_s_expand_table
 
 ENTRY = aws_hash_table_create_harness
 ###########

@@ -10,11 +10,13 @@
 #include <proof_helpers/utils.h>
 
 
-int s_expand_table(struct aws_hash_table *map) {
+int __CPROVER_file_local_hash_table_c_s_expand_table(struct aws_hash_table *map) {
     struct hash_table_state *old_state = map->p_impl;
     struct hash_table_state template = *old_state;
 
-    s_update_template_size(&template, template.size * 2);
+    if (s_update_template_size(&template, template.size * 2) != AWS_OP_SUCCESS){
+      return AWS_OP_ERR;
+    }
 
     /* Don't use s_alloc_state because that will call calloc
      * and we want non-det values for the entries

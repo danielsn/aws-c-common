@@ -442,7 +442,9 @@ static int s_expand_table(struct aws_hash_table *map) {
     struct hash_table_state *old_state = map->p_impl;
     struct hash_table_state template = *old_state;
 
-    s_update_template_size(&template, template.size * 2);
+    if (s_update_template_size(&template, template.size * 2)) {
+        return AWS_OP_ERR;
+    }
 
     struct hash_table_state *new_state = s_alloc_state(&template);
     if (!new_state) {
