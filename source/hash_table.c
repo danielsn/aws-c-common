@@ -639,6 +639,9 @@ int aws_hash_table_remove(
     const void *key,
     struct aws_hash_element *p_value,
     int *was_present) {
+    AWS_PRECONDITION(aws_hash_table_is_valid(map));
+    AWS_PRECONDITION(p_value == NULL || AWS_OBJECT_PTR_IS_WRITABLE(p_value));
+    AWS_PRECONDITION(was_present == NULL || AWS_OBJECT_PTR_IS_WRITABLE(was_present));
 
     struct hash_table_state *state = map->p_impl;
     uint64_t hash_code = s_hash_for(state, key);
@@ -653,6 +656,7 @@ int aws_hash_table_remove(
 
     if (rv != AWS_ERROR_SUCCESS) {
         *was_present = 0;
+        AWS_POSTCONDITION(aws_hash_table_is_valid(map));
         return AWS_OP_SUCCESS;
     }
 
@@ -670,6 +674,7 @@ int aws_hash_table_remove(
     }
     s_remove_entry(state, entry);
 
+    AWS_POSTCONDITION(aws_hash_table_is_valid(map));
     return AWS_OP_SUCCESS;
 }
 
