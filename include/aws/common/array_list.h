@@ -27,7 +27,11 @@ struct aws_array_list {
     size_t current_size;
     size_t length;
     size_t item_size;
-    void *data;
+#if defined(CBMC) && defined(ARRAY_LIST_TYPE)
+  ARRAY_LIST_TYPE* data;
+#else
+  void *data;
+#endif
 };
 
 /**

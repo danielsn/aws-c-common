@@ -330,18 +330,37 @@ int aws_array_list_get_at(const struct aws_array_list *AWS_RESTRICT list, void *
     return aws_raise_error(AWS_ERROR_INVALID_INDEX);
 }
 
+#include <aws/common/byte_buf.h>
+#include <aws/cryptosdk/edk.h>
+
+
+
+#if defined(CBMC) && defined(ARRAY_LIST_TYPE)
+AWS_STATIC_IMPL
+int aws_array_list_get_at_ptr(const struct aws_array_list *AWS_RESTRICT list, ARRAY_LIST_TYPE **val, size_t index) {
+  if (list->length > index) {
+    *val = &(list->data[index]);
+    //    AWS_POSTCONDITION(aws_array_list_is_valid(list));
+    return AWS_OP_SUCCESS;
+  }
+
+
+  return aws_raise_error(AWS_ERROR_INVALID_INDEX);
+}
+#else
 AWS_STATIC_IMPL
 int aws_array_list_get_at_ptr(const struct aws_array_list *AWS_RESTRICT list, void **val, size_t index) {
-    AWS_PRECONDITION(aws_array_list_is_valid(list));
-    AWS_PRECONDITION(val != NULL);
-    if (aws_array_list_length(list) > index) {
-        *val = (void *)((uint8_t *)list->data + (list->item_size * index));
-        AWS_POSTCONDITION(aws_array_list_is_valid(list));
-        return AWS_OP_SUCCESS;
-    }
+  AWS_PRECONDITION(aws_array_list_is_valid(list));
+  AWS_PRECONDITION(val != NULL);
+  if (aws_array_list_length(list) > index) {
+    *val = (void *)((uint8_t *)list->data + (list->item_size * index));
     AWS_POSTCONDITION(aws_array_list_is_valid(list));
-    return aws_raise_error(AWS_ERROR_INVALID_INDEX);
+    return AWS_OP_SUCCESS;
+  }
+  AWS_POSTCONDITION(aws_array_list_is_valid(list));
+  return aws_raise_error(AWS_ERROR_INVALID_INDEX);
 }
+#endif
 
 AWS_STATIC_IMPL
 int aws_array_list_set_at(struct aws_array_list *AWS_RESTRICT list, const void *val, size_t index) {
